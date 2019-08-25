@@ -82,6 +82,33 @@ struct BinaryIndexedTree {
     }
     return ret;
   }
+
+    //各項がすべて非負のものに対して、sum[1,a]>=keyを満たす最小のaを返す 存在しないなら-1返す
+  T lower_bound(T key){
+    T len=1,temp=n,now=0,value=0,flag;
+    while(temp/2!=0){
+      len*=2;
+      temp/=2;
+    }
+
+    while(len>0){
+      while(now+len>n)len/=2;
+
+      if(value+bit[now+len]>=key){
+        len/=2;
+      }else{
+        now+=len;
+        value+=bit[now];
+        len/=2;
+        if(now==n){
+          return -1;
+        }
+      }
+    }
+
+    now++;
+    return now;
+  }
 };
 
 // UnionFind

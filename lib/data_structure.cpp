@@ -19,12 +19,9 @@ using ll = long long;
 
 //最大値セグ木 0-indexed 初期値はminで指定
 template<class T>
-class SegmentTree {
-  private:
+struct SegmentTree {
   T n, low;
   std::vector<T> dat;
-
-  public:
 
   SegmentTree(T i, T min) {
     n = 1;
@@ -64,12 +61,9 @@ class SegmentTree {
 
 //とりあえず1-indexedでつくったBIT
 template <class T>
-class BinaryIndexedTree {
-  private:
+struct BinaryIndexedTree {
   T n;
   std::vector<T> bit;
-
-  public:
 
   BinaryIndexedTree(T i) : n(i), bit(i + 1, 0){};
 
@@ -119,13 +113,9 @@ class BinaryIndexedTree {
 
 // UnionFind
 template<class T>
-class UnionFind {
-  private:
+struct UnionFind {
   std::vector<T> uni;
   T num;
-
-  public:
-
   UnionFind(T s) : uni(s, -1), num(s) {}
 
   //頂点aが所属するグループ
@@ -168,5 +158,3 @@ class UnionFind {
     return b.size();
   }
 };
-
-

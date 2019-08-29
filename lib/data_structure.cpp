@@ -7,6 +7,7 @@
 #include <deque>
 #include <iomanip>
 #include <iostream>
+#include<functional>
 #include <map>
 #include <numeric>
 #include <queue>
@@ -18,42 +19,46 @@
 using ll = long long;
 
 //最大値セグ木 0-indexed 初期値はminで指定
-template<class T>
+template <class T>
 class SegmentTree {
-  private:
-  T n, low;
+ private:
+  T n, init;
   std::vector<T> dat;
+  std::function<T(T, T)> fn;
 
-  public:
-  SegmentTree(T i, T min) {
+ public:
+  SegmentTree(T i, T para, std::function<T(T, T)> fun) : init(para), fn(fun) {
     n = 1;
     while (n < i) {
       n *= 2;
     }
-    low = min;
-    dat = std::vector<T>(2 * n - 1, low);
+    dat = std::vector<T>(2 * n - 1, init);
   }
 
-  // k番目(0-indexed)を値aで更新
-  void update(T k, T a) {
+  // k番目(0-indexed)を値aで更新,dest=trueのときは更新前を破壊して初期化する
+  void update(T k, T a, bool dest) {
     k += n - 1;
-    dat[k] = a;
+    if (dest)
+      dat[k] = a;
+    else
+      dat[k] = fn(dat[k], a);
+
     while (k > 0) {
       k = (k - 1) / 2;
-      dat[k] = std::max(dat[k * 2 + 1], dat[k * 2 + 2]);
+      dat[k] = fn(dat[k * 2 + 1], dat[k * 2 + 2]);
     }
   }
 
   T query(T a, T b, T k, T l, T r) {
     if (r <= a || b <= l) {
-      return low;
+      return init;
     }
     if (a <= l && r <= b) {
       return dat[k];
     } else {
       T vl = query(a, b, k * 2 + 1, l, (l + r) / 2);
       T vr = query(a, b, k * 2 + 2, (l + r) / 2, r);
-      return std::max(vl, vr);
+      return fn(vl, vr);
     }
   }
 

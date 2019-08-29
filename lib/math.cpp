@@ -18,8 +18,8 @@
 using ll = long long;
 
 //非再帰累乗(mod付き)
-ll pow_mod(ll a, ll b, ll mod) {
-  if (a % mod == 0) {
+ll pow_mod(ll a, ll b, ll mod=-1) {
+  if ((a == 0)||(mod==-1&&a%mod==0)) {
     return 0;
   }
 
@@ -27,9 +27,9 @@ ll pow_mod(ll a, ll b, ll mod) {
 
   while (b > 0) {
     if (b & 1) {
-      x = (x * a) % mod;
+      x = (mod!=-1)?(x * a) % mod:x*a;
     }
-    a = (a * a) % mod;
+    a = (mod!=-1)?(a * a) % mod:a*a;
     b >>= 1;
   }
   return x;

@@ -22,12 +22,14 @@ using ll = long long;
 template <class T>
 class SegmentTree {
  private:
-  T n, init;
+  long long n;
+  T init;
   std::vector<T> dat;
   std::function<T(T, T)> fn;
 
  public:
-  SegmentTree(T i, T para, std::function<T(T, T)> fun) : init(para), fn(fun) {
+  SegmentTree(long long i, T para, std::function<T(T, T)> fun)
+      : init(para), fn(fun) {
     n = 1;
     while (n < i) {
       n *= 2;
@@ -36,7 +38,7 @@ class SegmentTree {
   }
 
   // k番目(0-indexed)を値aで更新,dest=trueのときは更新前を破壊して初期化する
-  void update(T k, T a, bool dest) {
+  void update(long long k, T a, bool dest) {
     k += n - 1;
     if (dest)
       dat[k] = a;
@@ -49,7 +51,7 @@ class SegmentTree {
     }
   }
 
-  T query(T a, T b, T k, T l, T r) {
+  T query(long long a, long long b, long long k, long long l, long long r) {
     if (r <= a || b <= l) {
       return init;
     }
@@ -63,7 +65,7 @@ class SegmentTree {
   }
 
   //[a,b)での最大値を返す
-  T query(T a, T b) { return query(a, b, 0, 0, n); }
+  T query(long long a, long long b) { return query(a, b, 0, 0, n); }
 };
 
 //とりあえず1-indexedでつくったBIT

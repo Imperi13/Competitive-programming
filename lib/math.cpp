@@ -17,6 +17,19 @@
 
 using ll = long long;
 
+//拡張互除法 ax+by=gcd(a,b)となるx,yを参照渡しする
+//返り値はgcd(a,b)
+long long extgcd(long long a,long long b,long long& x,long long& y){
+  for(ll u=y=1,v=x=0;a;){
+    ll q=b/a;
+    std::swap(x-=q*u,u);
+    std::swap(y-=q*v,v);
+    std::swap(b-=q*a,a);
+  }
+
+  return b;
+}
+
 //非再帰累乗(mod付き)
 ll pow_mod(ll a, ll b, ll mod=-1) {
   if ((a == 0)||(mod!=-1&&a%mod==0)) {

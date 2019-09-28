@@ -130,3 +130,71 @@ class NumberTheoreticTransform {
     return A;
   }
 };
+
+namespace mat{
+
+  template<class T>
+  class Matrix{
+    public:
+
+    std::vector<std::vector<T>> value;
+
+    Matrix(long long r,long long c):_row(r),_column(c){
+      value.resize(_row);
+      for(long long i=0;i<_row;i++){
+        value[i].resize(_column);
+        for(long long j=0;j<_column;j++){
+          value[i][j]=0;
+        }
+      }
+    }
+
+    Matrix():_row(1),_column(1){
+      value.resize(1);
+      value[0].resize(1);
+      value[0][0]=0;
+    }
+
+    Matrix(const Matrix<T>& A){
+      _row=A.row();_column=A.column();
+      value.resize(_row);
+      for(long long i=0;i<_row;i++){
+        value[i].resize(_column);
+        for(long long j=0;j<_column;j++){
+          value[i][j]=A.value[i][j];
+        }
+      }
+    }
+
+    Matrix(const std::vector<std::vector<T>>& A){
+      _row=A.size();_column=A[0].size();
+      value.resize(_row);
+      for(long long i=0;i<_row;i++){
+        value[i].resize(_column);
+        for(long long j=0;j<_column;j++){
+          value[i][j]=A[i][j];
+        }
+      }
+    }
+
+    void show(){
+      for(long long i=0;i<_row;i++){
+        for(long long j=0;j<_column;j++){
+          std::cout<<value[i][j]<<" ";
+        }
+        std::cout<<"\n";
+      }
+    }
+
+    void change(long long r,long long c,T val){ value[r][c]=val;}
+
+    long long row()const{return this->_row;}
+    long long column()const{return this->_column;}
+
+    private: 
+
+    long long _row,_column;
+
+  };
+
+}

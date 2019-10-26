@@ -18,7 +18,7 @@
 
 using ll = long long;
 
-//最大値セグ木 0-indexed 初期値はminで指定
+//抽象セグ木 0-indexed 単位元はiで指定
 template <class T>
 class SegmentTree {
  private:
@@ -51,21 +51,24 @@ class SegmentTree {
     }
   }
 
-  T query(long long a, long long b, long long k, long long l, long long r) {
-    if (r <= a || b <= l) {
-      return init;
-    }
-    if (a <= l && r <= b) {
-      return dat[k];
-    } else {
-      T vl = query(a, b, k * 2 + 1, l, (l + r) / 2);
-      T vr = query(a, b, k * 2 + 2, (l + r) / 2, r);
-      return fn(vl, vr);
-    }
-  }
+  T query(long long a, long long b){
+    assert(0<=a&&b<=n);
+    T val=init;
 
-  //[a,b)での最大値を返す
-  T query(long long a, long long b) { return query(a, b, 0, 0, n); }
+    long long l=a+n-1,r=b+n-1;
+    for(;l<r;l=(l>>1),r=(r>>1)){
+      if(!(r&1)){
+        r--;
+        val=fn(val,dat[r]);
+      }
+      if(!(l&1)){
+        val=fn(val,dat[l]);
+        l++;
+      }
+    }
+
+    return val;
+  }
 };
 
 //とりあえず1-indexedでつくったBIT

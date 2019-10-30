@@ -3,6 +3,7 @@
 /copy/
 /kigyoucon/
 /Syouzin/
+/.vscode/
 copy.sh
 a.cpp
 cs.code-workspace

@@ -48,6 +48,25 @@ ll pow_mod(ll a, ll b, ll mod=-1) {
   return x;
 }
 
+//非再帰累乗　
+template<typename T>
+T pow2(T a, long long b) {
+  if (a == 0) {
+    return 0;
+  }
+ 
+  T x = 1;
+ 
+  while (b > 0) {
+    if (b & 1) {
+      x = (x * a);
+    }
+    a = (a * a);
+    b >>= 1;
+  }
+  return x;
+}
+
 //原始根を使うFFT 法をとっていることに注意
 // max_dには多項式2つの次数の積より大きい2^nを渡す
 template <ll modu, ll root>

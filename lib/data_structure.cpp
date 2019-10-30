@@ -18,7 +18,7 @@
 
 using ll = long long;
 
-//抽象セグ木 0-indexed 単位元はiで指定
+//非再帰抽象セグ木 0-indexed 単位元はiで指定
 template <class T>
 class SegmentTree {
  private:

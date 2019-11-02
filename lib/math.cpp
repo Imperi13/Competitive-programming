@@ -48,7 +48,7 @@ ll pow_mod(ll a, ll b, ll mod=-1) {
   return x;
 }
 
-//非再帰累乗　
+//非再帰累乗
 template<typename T>
 T pow2(T a, long long b) {
   if (a == 0) {

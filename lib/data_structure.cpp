@@ -51,6 +51,7 @@ class SegmentTree {
     }
   }
 
+  //[a,b)の値を返す
   T query(long long a, long long b){
     assert(0<=a&&b<=n);
     T val=init;
@@ -126,17 +127,16 @@ class BinaryIndexedTree {
 };
 
 // UnionFind
-template<class T>
 class UnionFind {
   private:
-  std::vector<T> uni;
-  T num;
+  std::vector<long long> uni;
+  long long num;
 
   public:
-  UnionFind(T s) : uni(s, -1), num(s) {}
+  UnionFind(long long s) : uni(s, -1), num(s) {}
 
   //頂点aが所属するグループ
-  T root(T a) {
+  long long root(long long a) {
     if (uni[a] < 0) {
       return a;
     }
@@ -144,7 +144,7 @@ class UnionFind {
   }
 
   // a,bをつなげる
-  bool connect(T a, T b) {
+  bool connect(long long a, long long b) {
     a = root(a);
     b = root(b);
     if (a == b) {
@@ -161,15 +161,15 @@ class UnionFind {
   }
 
   // a,bが同グループか確認
-  bool isConnect(T a, T b) { return root(a) == root(b); }
+  bool isConnect(long long a, long long b) { return root(a) == root(b); }
 
   // aが属するグループの要素数
-  T size(T a) { return -uni[root(a)]; }
+  long long size(long long a) { return -uni[root(a)]; }
 
   //グループ数を返す
-  T groups() {
-    std::set<T> b;
-    for (T i = 0; i < num; i++) {
+  long long groups() {
+    std::set<long long> b;
+    for (long long i = 0; i < num; i++) {
       b.insert(root(i));
     }
     return b.size();

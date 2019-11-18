@@ -37,13 +37,21 @@ class SegmentTree {
     dat = std::vector<T>(2 * n - 1, init);
   }
 
+  SegmentTree(const std::vector<T>& seq,T para,std::function<T(T,T)> fun)
+      : init(para),fn(fun){
+    n=1;
+    while(n<seq.size())n<<=1;
+    dat=std::vector<T>(2*n-1,init);
+    for(long long i=0;i<seq.size();i++)dat[i+n-1]=seq[i];
+    for(long long i=n-2;i>=0;i--)dat[i]=fn(dat[i*2+1],dat[i*2+2]);
+  }
+
   // k番目(0-indexed)を値aで更新,dest=trueのときは更新前を破壊して初期化する
   void update(long long k, T a, bool dest) {
+    assert(0<=k&&k<n);
     k += n - 1;
-    if (dest)
-      dat[k] = a;
-    else
-      dat[k] = fn(dat[k], a);
+    if (dest) dat[k] = a;
+    else dat[k] = fn(dat[k], a);
 
     while (k > 0) {
       k = (k - 1) / 2;

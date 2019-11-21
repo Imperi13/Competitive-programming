@@ -49,7 +49,7 @@ class StrongConnectedComponents{
   long long v;
   std::vector<long long> compo,order,used;
 
-  //WIP:dfsの戻り掛け順を非再帰で書きたい　バグってる
+  //WIP:dfsの戻り掛け順を非再帰で書きたい バグってる
   /*void calc_order(){
     std::vector<long long> used(v,-1),par(v,-1);
     for(long long i=0;i<v;i++){

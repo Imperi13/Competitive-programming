@@ -80,6 +80,85 @@ class SegmentTree {
   }
 };
 
+//動的セグ木 実装上各項を初期化することはできない
+//逆元が存在すれば初期化可能だけどmin,maxとかなら無理
+template<typename T>
+class DynamicSegmentTree{
+  private:
+
+  long long n0;
+  std::function<T(T,T)> fn;
+  T init;
+
+  class Node{
+    public:
+    std::shared_ptr<Node> left,right;
+    T value;
+
+    Node(T i):value(i),left(),right(){}
+  };
+
+  std::shared_ptr<Node> root;
+
+  T query(long long a,long long b,const std::shared_ptr<Node>& now,long long l,long long r){
+    if(a<=l&&r<=b){
+      return now->value;
+    }
+    if(b<=l||r<=a){
+      return init;
+    }
+
+    T lval=(now->left)?query(a,b,now->left,l,l+(r-l)/2):init;
+    T rval=(now->right)?query(a,b,now->right,l+(r-l)/2,r):init;
+
+    return fn(lval,rval);
+  }
+
+  public:
+
+  //要素数の最大値n,単位元i,演算fを渡す
+  DynamicSegmentTree(long long n_,T i,std::function<T(T,T)> f):init(i),fn(f),root(new Node(init)){
+    n0=1;
+    while(n0<n_)n0<<=1;
+  }
+
+  // 更新 Ai=fn(Ai,val) を行う
+  void update(long long i,T val){
+    std::shared_ptr<Node> now(root);
+    now->value=fn(now->value,val);
+
+    long long l=0,r=n0;
+    while(r-l>1){
+      long long mid=l+(r-l)/2;
+
+      if(i<mid){
+        if(!now->left){
+          now->left=std::make_shared<Node>(init);
+        }
+
+        now=now->left;
+        now->value=fn(now->value,val);
+
+        r=mid;
+      }else{
+        if(!now->right){
+          now->right=std::make_shared<Node>(init);
+        }
+
+        now=now->right;
+        now->value=fn(now->value,val);
+
+        l=mid;
+      }
+    }
+  }
+
+  //[a,b)の区間演算結果を返す
+  T query(long long a,long long b){
+    return query(a,b,root,0,n0);
+  }
+};
+
 //とりあえず1-indexedでつくったBIT
 template <class T>
 class BinaryIndexedTree {

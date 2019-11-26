@@ -80,22 +80,26 @@ class SegmentTree {
   }
 };
 
-//動的セグ木 実装上各項を初期化することはできない
-//逆元が存在すれば初期化可能だけどmin,maxとかなら無理
+//動的セグ木 
 template<typename T>
 class DynamicSegmentTree{
   private:
 
-  long long n0;
+  long long n,n0;
   std::function<T(T,T)> fn;
   T init;
 
   class Node{
     public:
     std::shared_ptr<Node> left,right;
+    std::weak_ptr<Node> par;
     T value;
 
-    Node(T i):value(i),left(),right(){}
+    Node(T i,const std::shared_ptr<Node>& par_):value(i),left(),right(){
+      par=par_;
+    }
+
+    Node(T i):value(i),left(),right(),par(){}
   };
 
   std::shared_ptr<Node> root;
@@ -117,15 +121,15 @@ class DynamicSegmentTree{
   public:
 
   //要素数の最大値n,単位元i,演算fを渡す
-  DynamicSegmentTree(long long n_,T i,std::function<T(T,T)> f):init(i),fn(f),root(new Node(init)){
+  DynamicSegmentTree(long long n_,T i,std::function<T(T,T)> f):n(n_),init(i),fn(f),root(new Node(init)){
     n0=1;
     while(n0<n_)n0<<=1;
   }
 
-  // 更新 Ai=fn(Ai,val) を行う
-  void update(long long i,T val){
+  // 更新 Ai=fn(Ai,val) を行う,dest=trueのときは初期化
+  void update(long long i,T val,bool dest){
+    assert(0<=i&&i<n);
     std::shared_ptr<Node> now(root);
-    now->value=fn(now->value,val);
 
     long long l=0,r=n0;
     while(r-l>1){
@@ -133,28 +137,35 @@ class DynamicSegmentTree{
 
       if(i<mid){
         if(!now->left){
-          now->left=std::make_shared<Node>(init);
+          now->left=std::make_shared<Node>(init,now);
         }
 
         now=now->left;
-        now->value=fn(now->value,val);
 
         r=mid;
       }else{
         if(!now->right){
-          now->right=std::make_shared<Node>(init);
+          now->right=std::make_shared<Node>(init,now);
         }
 
         now=now->right;
-        now->value=fn(now->value,val);
 
         l=mid;
       }
+    }
+
+    if(dest)now->value=val;
+    else now->value=fn(now->value,val);
+
+    while(now->par.lock()){
+      now=now->par.lock();
+      now->value=fn((now->left)?now->left->value:init,(now->right)?now->right->value:init);
     }
   }
 
   //[a,b)の区間演算結果を返す
   T query(long long a,long long b){
+    assert(0<=a&&b<=n);
     return query(a,b,root,0,n0);
   }
 };

@@ -127,7 +127,7 @@ class LazySegmentTree{
         lazy[2*k+2]=h(lazy[2*k+2],lazy[k]);
       }
       dat[k]=g(dat[k],p(lazy[k],r-l));
-      lazy[k]=0;
+      lazy[k]=init_e;
     }
 
     if(r<=a||b<=l)return init_t;

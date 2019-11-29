@@ -101,7 +101,7 @@ class LazySegmentTree{
   H h;
   P p;
 
-  T update(int a,int b,T val,int l,int r,int k){
+  T update(int a,int b,E val,int l,int r,int k){
     if(lazy[k]!=init_e){
       if(k<n0-1){
         lazy[2*k+1]=h(lazy[2*k+1],lazy[k]);
@@ -152,7 +152,7 @@ class LazySegmentTree{
     }
   }
 
-  void update(int a,int b,T val){
+  void update(int a,int b,E val){
     update(a,b,val,0,n0,0);
   }
 

@@ -19,7 +19,7 @@
 #include <utility>
 
 template<typename T>
-class PermanentStack{
+class PersistentStack{
   private:
 
   class Node{
@@ -34,9 +34,9 @@ class PermanentStack{
 
   public:
 
-  PermanentStack():root(){}
+  PersistentStack():root(){}
 
-  PermanentStack(const std::shared_ptr<Node>& root_):root(root_){}
+  PersistentStack(const std::shared_ptr<Node>& root_):root(root_){}
 
   bool empty(){
     return !root;
@@ -47,12 +47,12 @@ class PermanentStack{
     return root->value;
   }
 
-  PermanentStack push(T value_){
-    return PermanentStack(std::make_shared<Node>(value_,root));
+  PersistentStack push(T value_){
+    return PersistentStack(std::make_shared<Node>(value_,root));
   }
 
-  PermanentStack pop(){
+  PersistentStack pop(){
     assert(root);
-    return PermanentStack(root->next);
+    return PersistentStack(root->next);
   }
 };

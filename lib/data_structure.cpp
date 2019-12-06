@@ -251,6 +251,133 @@ class DynamicSegmentTree{
   }
 };
 
+//LiChaoSegmentTree
+//CHTができる
+template<typename T,T id>
+class LiChaoSegmentTree{
+
+  struct Line{
+    std::pair<T,T> coeffi;
+
+    Line(std::pair<T,T> a):coeffi(a){}
+
+    T value(T x){
+      return coeffi.first*x+coeffi.second;
+    }
+  };
+
+  struct Node{
+
+    std::shared_ptr<Node> left,right;
+    Line line;
+
+    Node():line(std::pair<T,T>(0,id)),left(),right(){}
+
+    Node(Line line_):line(line_),left(),right(){}
+  };
+
+  private:
+
+  long long n,n0;
+  std::vector<T> num;
+
+  std::shared_ptr<Node> root;
+
+
+
+  public:
+
+  LiChaoSegmentTree(long long n_):n(n_),root(new Node()),num(std::vector<T>(n_,0)){
+    for(ll i=1;i<n_;i++)num[i]=num[i-1]+1;
+
+    n0=1;
+    while(n0<n_)n0<<=1;
+  }
+
+  LiChaoSegmentTree(const std::vector<T>& num_):n(num_.size()),root(new Node()),num(num_){
+    n0=1;
+    while(n0<n)n0<<=1;
+  }
+
+  void addline(std::pair<T,T> line_){
+    Line f=Line(line_);
+    std::shared_ptr<Node> now(root);
+    long long l=0,r=n0;
+    while(r-l>1){
+
+      if(f.value(num[l])>=now->line.value(num[l])&&f.value(num[std::min(n,r)-1])>=now->line.value(num[std::min(n,r)-1])){
+        return;
+      }
+
+      if(f.value(num[l]) < now->line.value(num[l])&&f.value(num[std::min(n,r)-1]) < now->line.value(num[std::min(n,r)-1])){
+        now->line=f;
+        return;
+      }
+
+      long long mid=l+(r-l)/2;
+
+      if(n<=mid){
+        if(now->line.value(num[n-1]) > f.value(num[n-1])){
+          std::swap(now->line,f);
+        }
+
+        if(!now->left)now->left=std::make_shared<Node>();
+        now=now->left;
+        r=mid;
+      }else{
+        if(now->line.value(num[mid-1]) > f.value(num[mid-1])){
+          std::swap(now->line,f);
+        }
+
+        if(now->line.value(num[l]) > f.value(num[l])){
+          if(!now->left)now->left=std::make_shared<Node>();
+          now=now->left;
+          r=mid;
+        }else{
+          if(!now->right)now->right=std::make_shared<Node>();
+          now=now->right;
+          l=mid;
+        }
+      }
+    }
+
+    if(now->line.value(l) > f.value(l)){
+      now->line=f;
+      return;
+    }
+  }
+
+  T query(T val){
+    long long i=std::lower_bound(all(num),val)-num.begin();
+    std::shared_ptr<Node> now(root);
+
+    T ans=now->line.value(num[i]);
+
+    long long l=0,r=n0;
+    while(r-l>1){
+      if(ans > now->line.value(num[i]))ans=now->line.value(num[i]);
+      long long mid=l+(r-l)/2;
+
+      if(i<mid){
+        r=mid;
+        if(!now->left)return ans;
+
+        now=now->left;
+      }else{
+        l=mid;
+        if(!now->right)return ans;
+
+        now=now->right;
+      }
+
+    }
+
+    if(now->line.value(num[i]) < ans)ans=now->line.value(num[i]);
+
+    return ans;
+  }
+};
+
 //とりあえず1-indexedでつくったBIT
 template <class T>
 class BinaryIndexedTree {

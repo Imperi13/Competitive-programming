@@ -252,7 +252,7 @@ class DynamicSegmentTree{
 };
 
 //LiChaoSegmentTree
-//minを返すCHTができる
+//minを返すCHTができる 線分追加に対応した
 template<typename T,T id>
 class LiChaoSegmentTree{
 
@@ -283,7 +283,56 @@ class LiChaoSegmentTree{
 
   std::shared_ptr<Node> root;
 
+  void eval(Line f,long long a,long long b,std::shared_ptr<Node> now,long long l,long long r){
 
+    if(a==b)return;
+
+    if(r-l>1){
+      if(f.value(num[l])>=now->line.value(num[l])&&f.value(num[std::min(n,r)-1])>=now->line.value(num[std::min(n,r)-1])){
+        return;
+      }
+
+      long long mid=l+(r-l)/2;
+
+      if(a<=l&&r<=b){
+
+        if(n<=mid){
+          if(now->line.value(num[n-1]) > f.value(num[n-1])){
+            std::swap(now->line,f);
+          }
+
+          if(!now->left)now->left=std::make_shared<Node>();
+          eval(f,a,b,now->left,l,mid);
+        }else{
+          if(now->line.value(num[mid-1]) > f.value(num[mid-1])){
+            std::swap(now->line,f);
+          }
+
+          if(now->line.value(num[l]) > f.value(num[l])){
+            if(!now->left)now->left=std::make_shared<Node>();
+            eval(f,a,b,now->left,l,mid);
+          }else{
+            if(!now->right)now->right=std::make_shared<Node>();
+            eval(f,a,b,now->right,mid,r);
+          }
+        }
+      }else{
+        if(b>l&&mid>a){
+          if(!now->left)now->left=std::make_shared<Node>();
+          eval(f,a,b,now->left,l,mid);
+        }
+        if(b>mid&&r>a){
+          if(!now->right)now->right=std::make_shared<Node>();
+          eval(f,a,b,now->right,mid,r);
+        }
+      }
+    }else{
+      if(now->line.value(l) > f.value(l)){
+        now->line=f;
+        return;
+      }
+    }
+  }
 
   public:
 
@@ -299,52 +348,18 @@ class LiChaoSegmentTree{
     while(n0<n)n0<<=1;
   }
 
+
+
   void addline(std::pair<T,T> line_){
     Line f=Line(line_);
-    std::shared_ptr<Node> now(root);
-    long long l=0,r=n0;
-    while(r-l>1){
+    eval(f,0,n0,root,0,n0);
+  }
 
-      if(f.value(num[l])>=now->line.value(num[l])&&f.value(num[std::min(n,r)-1])>=now->line.value(num[std::min(n,r)-1])){
-        return;
-      }
-
-      if(f.value(num[l]) < now->line.value(num[l])&&f.value(num[std::min(n,r)-1]) < now->line.value(num[std::min(n,r)-1])){
-        now->line=f;
-        return;
-      }
-
-      long long mid=l+(r-l)/2;
-
-      if(n<=mid){
-        if(now->line.value(num[n-1]) > f.value(num[n-1])){
-          std::swap(now->line,f);
-        }
-
-        if(!now->left)now->left=std::make_shared<Node>();
-        now=now->left;
-        r=mid;
-      }else{
-        if(now->line.value(num[mid-1]) > f.value(num[mid-1])){
-          std::swap(now->line,f);
-        }
-
-        if(now->line.value(num[l]) > f.value(num[l])){
-          if(!now->left)now->left=std::make_shared<Node>();
-          now=now->left;
-          r=mid;
-        }else{
-          if(!now->right)now->right=std::make_shared<Node>();
-          now=now->right;
-          l=mid;
-        }
-      }
-    }
-
-    if(now->line.value(l) > f.value(l)){
-      now->line=f;
-      return;
-    }
+  void addsegment(std::pair<T,T> line_,T a,T b){
+    Line f=Line(line_);
+    long long first=(std::lower_bound(all(num),a)-num.begin());
+    long long second=(std::upper_bound(all(num),b)-num.begin());
+    eval(f,first,second,root,0,n0);
   }
 
   T query(T val){

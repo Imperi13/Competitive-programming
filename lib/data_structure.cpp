@@ -524,9 +524,30 @@ class RBST{
     t=merge(temp2.first,temp.second);
   }
 
+  void build(node_ptr& t,const std::vector<T>& val_,int l,int r){
+    if(l==r){
+      t=nullptr;
+      return;
+    }
+    if(r==l+1){
+      t=std::make_shared<Node>(val_[l]);
+      return;
+    }
+
+    int mid=l+(r-l)/2;
+    t=std::make_shared<Node>(val_[mid]);
+    build(t->left,val_,l,mid);
+    build(t->right,val_,mid+1,r);
+    update(t);
+  }
+
   public:
 
   RBST(T id_,F fn_):id(id_),fn(fn_),root(){};
+
+  void build(const std::vector<T>& val_){
+    build(root,val_,0,val_.size());
+  }
 
   int size(){return count(root);}
 

@@ -175,5 +175,6 @@ class RBST{
     erase(root,lower_bound(root,key));
   }
 
+  //0-indexedになってるので注意
   T topk(int k){return topk(root,k);}
 };

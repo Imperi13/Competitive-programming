@@ -23,8 +23,10 @@ template<typename T>
 class DynamicSegmentTree{
   private:
 
+  using F=std::function<T(T,T)>;
+
   long long n,n0;
-  std::function<T(T,T)> fn;
+  F fn;
   T init;
 
   class Node{
@@ -59,7 +61,7 @@ class DynamicSegmentTree{
   public:
 
   //要素数の最大値n,単位元i,演算fを渡す
-  DynamicSegmentTree(long long n_,T i,std::function<T(T,T)> f):n(n_),init(i),fn(f),root(new Node(init)){
+  DynamicSegmentTree(long long n_,T i,F f):n(n_),init(i),fn(f),root(new Node(init)){
     n0=1;
     while(n0<n_)n0<<=1;
   }

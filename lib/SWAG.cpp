@@ -27,7 +27,9 @@ template<typename T>
 class SWAG{
   private:
 
-  std::function<T(T,T)> fn;
+  using F=std::function<T(T,T)>;
+
+  F fn;
 
   std::stack<T> front,back;
   std::vector<T> front_fold,back_fold;
@@ -36,7 +38,7 @@ class SWAG{
 
   public:
 
-  SWAG(T id_,std::function<T(T,T)> fn_):id(id_),fn(fn_),front_fold(1,id_),back_fold(1,id_){}
+  SWAG(T id_,F fn_):id(id_),fn(fn_),front_fold(1,id_),back_fold(1,id_){}
 
   void push(T val){
     back.push(val);

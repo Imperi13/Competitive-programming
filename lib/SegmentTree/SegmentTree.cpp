@@ -20,13 +20,16 @@
 template <class T>
 class SegmentTree {
  private:
+
+  using F=std::function<T(T,T)>;
+
   long long n;
   T init;
   std::vector<T> dat;
-  std::function<T(T, T)> fn;
+  F fn;
 
  public:
-  SegmentTree(long long i, T para, std::function<T(T, T)> fun)
+  SegmentTree(long long i, T para, F fun)
       : init(para), fn(fun) {
     n = 1;
     while (n < i) {
@@ -35,7 +38,7 @@ class SegmentTree {
     dat = std::vector<T>(2 * n - 1, init);
   }
 
-  SegmentTree(const std::vector<T>& seq,T para,std::function<T(T,T)> fun)
+  SegmentTree(const std::vector<T>& seq,T para,F fun)
       : init(para),fn(fun){
     n=1;
     while(n<seq.size())n<<=1;

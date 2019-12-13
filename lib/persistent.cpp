@@ -62,8 +62,10 @@ template<typename T>
 class PersistentSegmentTree{
   private:
 
+  using F=std::function<T(T,T)>;
+
   long long n,n0;
-  std::function<T(T,T)> fn;
+  F fn;
   T init;
 
   class Node{
@@ -98,12 +100,12 @@ class PersistentSegmentTree{
   public:
 
   //要素数の最大値n,単位元i,演算fを渡す
-  PersistentSegmentTree(long long n_,T i,std::function<T(T,T)> f):n(n_),init(i),fn(f),root(new Node(init)){
+  PersistentSegmentTree(long long n_,T i,F f):n(n_),init(i),fn(f),root(new Node(init)){
     n0=1;
     while(n0<n_)n0<<=1;
   }
 
-  PersistentSegmentTree(const std::shared_ptr<Node>& root_,long long n_,T i,std::function<T(T,T)> f):n(n_),init(i),fn(f),root(root_){
+  PersistentSegmentTree(const std::shared_ptr<Node>& root_,long long n_,T i,F f):n(n_),init(i),fn(f),root(root_){
     n0=1;
     while(n0<n_)n0<<=1;
   }

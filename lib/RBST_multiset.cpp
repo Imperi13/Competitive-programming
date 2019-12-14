@@ -44,7 +44,7 @@ class RBST{
 
   Xorshift rnd;
 
-  class Node;
+  struct Node;
 
   using node_ptr=std::shared_ptr<Node>;
   using F=std::function<bool(T,T)>;

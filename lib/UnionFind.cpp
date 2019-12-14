@@ -22,16 +22,15 @@
 #include <limits>
 #include "limits.h"
 
-//WIP: 実装ヤバめ
 
-// UnionFind
+// UnionFind 0-indexed
 class UnionFind {
   private:
   std::vector<long long> uni;
-  long long num;
+  long long num,group;
 
   public:
-  UnionFind(long long s) : uni(s, -1), num(s) {}
+  UnionFind(long long s) : uni(s, -1), num(s) ,group(s){}
 
   //頂点aが所属するグループ
   long long root(long long a) {
@@ -49,6 +48,8 @@ class UnionFind {
       return false;
     }
 
+    group--;
+
     if (uni[a] > uni[b]) {
       std::swap(a, b);
     }
@@ -65,11 +66,5 @@ class UnionFind {
   long long size(long long a) { return -uni[root(a)]; }
 
   //グループ数を返す
-  long long groups() {
-    std::set<long long> b;
-    for (long long i = 0; i < num; i++) {
-      b.insert(root(i));
-    }
-    return b.size();
-  }
+  long long groups() {return group;}
 };

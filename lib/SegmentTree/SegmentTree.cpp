@@ -63,20 +63,20 @@ class SegmentTree {
   //[a,b)の値を返す
   T query(long long a, long long b){
     assert(0<=a&&b<=n);
-    T val=init;
+    T rval=init,lval=init;
 
     long long l=a+n-1,r=b+n-1;
     for(;l<r;l=(l>>1),r=(r>>1)){
       if(!(r&1)){
         r--;
-        val=fn(val,dat[r]);
+        rval=fn(rval,dat[r]);
       }
       if(!(l&1)){
-        val=fn(val,dat[l]);
+        lval=fn(lval,dat[l]);
         l++;
       }
     }
 
-    return val;
+    return fn(lval,rval);
   }
 };

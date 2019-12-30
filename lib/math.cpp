@@ -69,13 +69,14 @@ T pow2(T a, long long b) {
 
 //原始根を使うFFT 法をとっていることに注意
 // max_dには多項式2つの次数の積より大きい2^nを渡す
-template <ll modu, ll root>
+template <long long modu, long long root>
 class NumberTheoreticTransform {
   /*
    modとrootと次数の最大値の組
    1224736769 , 3 , 2^24
    998244353 , 3 , 2^23
   */
+ using ll=long long;
 
  private:
 

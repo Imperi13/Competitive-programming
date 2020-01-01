@@ -24,6 +24,7 @@
 
 //LiChaoSegmentTree
 //minを返すCHTができる 線分追加に対応した
+//PS:線分追加バグってる
 template<typename T,T id>
 class LiChaoSegmentTree{
 
@@ -129,7 +130,7 @@ class LiChaoSegmentTree{
   void addsegment(std::pair<T,T> line_,T a,T b){
     Line f=Line(line_);
     long long first=(std::lower_bound(all(num),a)-num.begin());
-    long long second=(std::upper_bound(all(num),b)-num.begin());
+    long long second=(std::lower_bound(all(num),b)-num.begin());
     eval(f,first,second,root,0,n0);
   }
 

@@ -69,7 +69,7 @@ class SegmentTree {
     for(;l<r;l=(l>>1),r=(r>>1)){
       if(!(r&1)){
         r--;
-        rval=fn(rval,dat[r]);
+        rval=fn(dat[r],rval);
       }
       if(!(l&1)){
         lval=fn(lval,dat[l]);

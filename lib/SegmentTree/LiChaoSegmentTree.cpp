@@ -141,3 +141,112 @@ class LiChaoSegmentTree{
     return ans;
   }
 };
+
+
+
+
+//LiChaoSegmentTree 直線追加 O(logN) 線分追加 O(log^2 N)? 最小値クエリ O(log N)
+//templateのMAXはLineの初期値として使う (直線の値域は[-INF,MAX)となる必要がある)
+//x座標が整数型ならこっちだとクエリ先読みがいらない
+template<typename T,T MAX>
+class LiChaoSegmentTree{
+  using P=std::pair<T,T>;
+
+  struct Line{
+    P a;
+    T value(long long x){return a.first*x+a.second;}
+    Line():a(0,MAX){}
+    Line(P a_):a(a_){}
+  };
+
+  struct Node;
+  using node_ptr=std::shared_ptr<Node>;
+
+  struct Node{
+    node_ptr left,right;
+    Line line;
+    Node():left(),right(),line(){}
+  };
+
+  private:
+
+  long long lx,rx;
+  node_ptr root;
+
+  void eval(Line f,long long a,long long b,node_ptr now,long long l,long long r){
+    if(a==b)return;
+    if(r<=a||b<=l)return;
+    if(f.value(l) >= now->line.value(l) && f.value(r-1) >= now->line.value(r-1))return;
+    if(r-l==1){
+      if(f.value(l) < now->line.value(l)){
+        std::swap(f,now->line);
+        return;
+      }
+    }
+
+    long long mid=l+(r-l)/2;
+
+    if(a<=l&&r<=b){
+      if(f.value(l) < now->line.value(l) && f.value(r-1) < now->line.value(r-1)){
+        std::swap(f,now->line);
+        return;
+      }
+      if(f.value(mid-1) < now->line.value(mid-1))std::swap(f,now->line);
+      if(f.value(l) < now->line.value(l)){
+        if(!now->left)now->left=std::make_shared<Node>();
+        eval(f,a,b,now->left,l,mid);
+      }else{
+        if(!now->right)now->right=std::make_shared<Node>();
+        eval(f,a,b,now->right,mid,r);
+      }
+    }else{
+      if(mid>a&&b>l){
+        if(!now->left)now->left=std::make_shared<Node>();
+        eval(f,a,b,now->left,l,mid);
+      }
+      if(r>a&&b>mid){
+        if(!now->right)now->right=std::make_shared<Node>();
+        eval(f,a,b,now->right,mid,r);
+      }
+    }
+  }
+
+  public:
+
+  //x座標を[l,r)で初期化
+  LiChaoSegmentTree(long long l,long long r):lx(l),root(new Node()){
+    long long n0=1;
+    while(n0<(r-l))n0<<=1;
+    rx=lx+n0;
+  }
+
+  void add_line(P line_){
+    eval(Line(line_),lx,rx,root,lx,rx);
+  }
+
+  void add_segment(P line_,long long l_,long long r_){
+    eval(Line(line_),l_,r_,root,lx,rx);
+  }
+
+  T query(long long val){
+    T ans=MAX;
+    node_ptr now(root);
+    long long l=lx,r=rx;
+
+    while(r-l>1){
+      if(ans>now->line.value(val))ans=now->line.value(val);
+      long long mid=l+(r-l)/2;
+      if(val<mid){
+        if(!now->left)return ans;
+        now=now->left;
+        r=mid;
+      }else{
+        if(!now->right)return ans;
+        now=now->right;
+        l=mid;
+      }
+    }
+    if(ans>now->line.value(val))ans=now->line.value(val);
+    return ans;
+  }
+};

@@ -39,8 +39,8 @@ class BitVector{
 
   u64 n;//bitvector全体のサイズ
   u64 bitcnt;//全体の1の個数
-  const u64 LBLOCK=512;
-  const u64 SBLOCK=16;//uint16に対応しているから16以下
+  const u64 LBLOCK=512;//SBLOCKの倍数にする
+  const u64 SBLOCK=16;//16より大きくするならuint16をuint32とかに変えてね
 
   std::vector<u64> l;//大ブロック
   std::vector<std::pair<u16,u16>> s;//小ブロックとそのビット列
@@ -55,7 +55,6 @@ class BitVector{
     s[pos/SBLOCK].second|=1llu<<(pos%SBLOCK);
   }
 
-  //全部のbitをsetしたあと1回buildを呼ぶ
   void build(){
     u64 num=0;
     for(u64 i=0;i<=n;i++){
@@ -68,7 +67,6 @@ class BitVector{
     bitcnt=num;
   }
 
-  //pos番目のbitを返す
   u64 access(u64 pos){
     assert(0<=pos&&pos<n);
     return (s[pos/SBLOCK].second>>(pos%SBLOCK))&1;
@@ -80,50 +78,58 @@ class BitVector{
     return l[pos/LBLOCK]+s[pos/SBLOCK].first+popcount(s[pos/SBLOCK].second&((1llu<<(pos%SBLOCK))-1));
   }
 
-  //pos個目(1-indexed)のbitの位置を0-indexedで返す
+  //[0,k)にbitがちょうどpos個(1-indexed)入るような最小のkを返す
+  //pos個ないならuint64::max()を返す
   u64 select(u64 bit,u64 pos){
     assert(bit==0||bit==1);
     if(bit==1){
-      assert(0<pos&&pos<=bitcnt);
-      u64 num=0,left=0,right=n/LBLOCK + 1;
-      while(right-left>1){
-        u64 mid=left+(right-left)/2;
-        if(l[mid]>=pos)right=mid;
-        else left=mid;
+      if(pos<=0||bitcnt<pos)return std::numeric_limits<u64>::max();
+
+      u64 num=0,l1=0,r1=n/LBLOCK+1;
+      while(r1-l1>1){
+        u64 mid=l1+(r1-l1)/2;
+        if(l[mid]>=pos)r1=mid;
+        else l1=mid;
       }
-      num+=l[left];
-      left=left*LBLOCK/SBLOCK;right=std::min(left+LBLOCK/SBLOCK,n/SBLOCK+1);
-      while(right-left>1){
-        u64 mid=left+(right-left)/2;
-        if(num+s[mid].first>=pos)right=mid;
-        else left=mid;
+      num+=l[l1];
+      u64 l2=l1*LBLOCK/SBLOCK,r2=std::min(l2+LBLOCK/SBLOCK,n/SBLOCK+1);
+      while(r2-l2>1){
+        u64 mid=l2+(r2-l2)/2;
+        if(num+s[mid].first>=pos)r2=mid;
+        else l2=mid;
       }
-      num+=s[left].first;
-      for(u64 i=1;i<SBLOCK+1;i++){
-        if(num+popcount(s[left].second&((1llu<<i)-1))==pos)return left*SBLOCK+i-1;
+      num+=s[l2].first;
+      u64 l3=0,r3=SBLOCK;
+      while(r3-l3>1){
+        u64 mid=l3+(r3-l3)/2;
+        if(num+popcount(s[l2].second&((1llu<<mid)-1))>=pos)r3=mid;
+        else l3=mid;
       }
-      return -1;
+      return l2*SBLOCK+l3+1;
     }else{
-      assert(0<pos&&pos<=(n-bitcnt));
-      u64 num=0,left=0,right=n/LBLOCK + 1;
-      while(right-left>1){
-        u64 mid=left+(right-left)/2;
-        if(mid*LBLOCK-l[mid]>=pos)right=mid;
-        else left=mid;
+      if(pos<=0||n-bitcnt<pos)return std::numeric_limits<u64>::max();
+
+      u64 num=0,l1=0,r1=n/LBLOCK+1;
+      while(r1-l1>1){
+        u64 mid=l1+(r1-l1)/2;
+        if(mid*LBLOCK-l[mid]>=pos)r1=mid;
+        else l1=mid;
       }
-      num+=left*LBLOCK-l[left];
-      left*=LBLOCK/SBLOCK;
-      u64 left2=0,right2=std::min(LBLOCK/SBLOCK,n/SBLOCK+1-left*LBLOCK/SBLOCK);
-      while(right2-left2>1){
-        u64 mid=left2+(right2-left2)/2;
-        if(num+mid*SBLOCK-s[left+mid].first>=pos)right2=mid;
-        else left2=mid;
+      num+=l1*LBLOCK-l[l1];
+      u64 l2=l1*LBLOCK/SBLOCK,r2=std::min(l2+LBLOCK/SBLOCK,n/SBLOCK+1);
+      while(r2-l2>1){
+        u64 mid=l2+(r2-l2)/2;
+        if(num+(l2*SBLOCK-l1*LBLOCK)-s[mid].first>=pos)r2=mid;
+        else l2=mid;
       }
-      num+=left2*SBLOCK-s[left+left2].first;
-      for(u64 i=1;i<SBLOCK+1;i++){
-        if(num+i-popcount(s[left+left2].second&((1llu<<i)-1))==pos)return (left+left2)*SBLOCK+i-1;
+      num+=(l2*SBLOCK-l1*LBLOCK)-s[l2].first;
+      u64 l3=0,r3=SBLOCK;
+      while(r3-l3>1){
+        u64 mid=l3+(r3-l3)/2;
+        if(num+mid-popcount(s[l2].second&((1llu<<mid)-1))>=pos)r3=mid;
+        else l3=mid;
       }
-      return -1;
+      return l2*SBLOCK+l3+1;
     }
   }
 };

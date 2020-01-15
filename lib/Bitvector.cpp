@@ -21,8 +21,12 @@
 #include <utility>
 #include <limits>
 
+//bit列はuint64(uint16)で管理
+//無効値として使う数値をtemplate引数に渡す
+
 //http://miti-7.hatenablog.com/entry/2018/04/15/155638 
 //https://takeda25.hatenablog.jp/entry/20140201/1391250137 を参考にした
+template<std::uint64_t NONE>
 class BitVector{
   using u64=std::uint64_t;
   using u16=std::uint16_t;
@@ -79,11 +83,11 @@ class BitVector{
   }
 
   //[0,k)にbitがちょうどpos個(1-indexed)入るような最小のkを返す
-  //pos個ないならuint64::max()を返す
   u64 select(u64 bit,u64 pos){
     assert(bit==0||bit==1);
     if(bit==1){
-      if(pos<=0||bitcnt<pos)return std::numeric_limits<u64>::max();
+      if(pos==0)return 0;
+      if(pos<0||bitcnt<pos)return NONE;
 
       u64 num=0,l1=0,r1=n/LBLOCK+1;
       while(r1-l1>1){
@@ -107,7 +111,8 @@ class BitVector{
       }
       return l2*SBLOCK+l3+1;
     }else{
-      if(pos<=0||n-bitcnt<pos)return std::numeric_limits<u64>::max();
+      if(pos==0)return 0;
+      if(pos<0||n-bitcnt<pos)return NONE;
 
       u64 num=0,l1=0,r1=n/LBLOCK+1;
       while(r1-l1>1){

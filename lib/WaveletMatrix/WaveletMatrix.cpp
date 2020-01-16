@@ -160,6 +160,23 @@ class WaveletMatrix{
 
   std::map<u64,std::pair<u64,u64>> index;//index[num] = {numの始点index,個数}
 
+  //[first,last)の区間中にnum未満の値がいくつあるか返す
+  u64 less(u64 first,u64 last,u64 num){
+    assert(0<=first&&first<=last&&last<=n);
+
+    u64 ret=0;
+    for(int bit=BITLEN-1;bit>=0;bit--){
+      if((num>>bit)&1){
+        ret+=(last-bitvec[bit].rank(last))-(first-bitvec[bit].rank(first));
+        first=zerocnt[bit]+bitvec[bit].rank(first);
+        last=zerocnt[bit]+bitvec[bit].rank(last);
+      }else{
+        first-=bitvec[bit].rank(first);last-=bitvec[bit].rank(last);
+      }
+    }
+    return ret;
+  }
+
   public:
 
   //暫定的にuint64の配列しか受け取らないようにしている 構築 O(BITLEN*N)
@@ -233,24 +250,30 @@ class WaveletMatrix{
     return itr;
   }
 
-  //[s,t)の中でpos番目に小さい数字を返す O(BITLEN)
-  u64 quantile(u64 s,u64 t,u64 pos){
-    assert(0<=s&&s<t&&t<=n);
-    assert(0<pos&&pos<=t-s);
+  //[first,last)の中でpos番目に小さい数字を返すO(BITLEN)
+  u64 quantile(u64 first,u64 last,u64 pos){
+    assert(0<=first&&first<last&&last<=n);
+    assert(0<pos&&pos<=last-first);
 
-    u64 left=s,right=t,ret=0;
+    u64 ret=0;
     for(int bit=BITLEN-1;bit>=0;bit--){
-      u64 zero=right-bitvec[bit].rank(right)-left+bitvec[bit].rank(left);
+      u64 zero=last-bitvec[bit].rank(last)-first+bitvec[bit].rank(first);
       if(pos<=zero){
-        left=left-bitvec[bit].rank(left);right=left+zero;
+        first=first-bitvec[bit].rank(first);last=first+zero;
       }else{
         ret+=(1llu<<bit);
         pos-=zero;
-        u64 one=right-left-zero;
-        left=zerocnt[bit]+bitvec[bit].rank(left);right=left+one;
+        u64 one=last-first-zero;
+        first=zerocnt[bit]+bitvec[bit].rank(first);last=first+one;
       }
     }
     return ret;
+  }
+
+  //[first,last)区間内に[a,b)の値がいくつあるか返す
+  u64 rangefreq(u64 first,u64 last,u64 a,u64 b){
+    assert(a<=b);
+    return less(first,last,b)-less(first,last,a);
   }
 
   void test(){

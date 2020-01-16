@@ -25,8 +25,10 @@
 //WIP:access,rank,selectまでは実装した
 //    数値を扱う型と添え字を扱う型分けた方が良くない???
 
+//http://miti-7.hatenablog.com/entry/2018/04/28/152259を参考にしている
+
 //数列の要素は [0,1<<BITLEN) に収まっている必要がある (0<BITLEN<=64)
-//無効値をtemplate引数に渡す必要がある
+//無効値をtemplate引数に渡す
 template<uint64_t BITLEN,uint64_t NONE>
 class WaveletMatrix{
 
@@ -229,6 +231,26 @@ class WaveletMatrix{
       else itr=bitvec[bit].select(0,itr);
     }
     return itr;
+  }
+
+  //[s,t)の中でpos番目に小さい数字を返す
+  u64 quantile(u64 s,u64 t,u64 pos){
+    assert(0<=s&&s<t&&t<=n);
+    assert(0<pos&&pos<=t-s);
+
+    u64 left=s,right=t,ret=0;
+    for(int bit=BITLEN-1;bit>=0;bit--){
+      u64 zero=right-bitvec[bit].rank(right)-left+bitvec[bit].rank(left);
+      if(pos<=zero){
+        left=left-bitvec[bit].rank(left);right=left+zero;
+      }else{
+        ret+=(1llu<<bit);
+        pos-=zero;
+        u64 one=right-left-zero;
+        left=zerocnt[bit]+bitvec[bit].rank(left);right=left+one;
+      }
+    }
+    return ret;
   }
 
   void test(){

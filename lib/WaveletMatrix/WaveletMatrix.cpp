@@ -162,7 +162,7 @@ class WaveletMatrix{
 
   public:
 
-  //暫定的にuint64の配列しか受け取らないようにしている
+  //暫定的にuint64の配列しか受け取らないようにしている 構築 O(BITLEN*N)
   WaveletMatrix(const std::vector<u64>& seq):n(seq.size()),bitvec(BITLEN,seq.size()),zerocnt(BITLEN){
     std::vector<u64> temp=seq;
     for(int bit=BITLEN-1;bit>=0;bit--){
@@ -193,7 +193,7 @@ class WaveletMatrix{
     }
   }
 
-  //a_pos(0-indexed)を返す
+  //a_pos(0-indexed)を返す O(BITLEN)
   u64 access(u64 pos){
     assert(0<=pos&&pos<n);
     u64 num=0;
@@ -233,7 +233,7 @@ class WaveletMatrix{
     return itr;
   }
 
-  //[s,t)の中でpos番目に小さい数字を返す
+  //[s,t)の中でpos番目に小さい数字を返す O(BITLEN)
   u64 quantile(u64 s,u64 t,u64 pos){
     assert(0<=s&&s<t&&t<=n);
     assert(0<pos&&pos<=t-s);

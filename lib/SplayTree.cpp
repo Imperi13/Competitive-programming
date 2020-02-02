@@ -22,6 +22,9 @@
 #include <limits>
 #include "limits.h"
 
+//WIP:reverseは実装した 多分同じ感じで他の遅延操作はいけそう
+
+//SplayTree merge/split based
 template<typename T>
 class SplayTree{
   private:
@@ -35,7 +38,8 @@ class SplayTree{
     node_ptr left,right;
     T val,sum;
     int cnt;
-    Node(T val_):val(val_),sum(val_),cnt(1),left(),right(){}
+    bool rev;
+    Node(T val_):val(val_),sum(val_),cnt(1),left(),right(),rev(false){}
   };
 
   node_ptr root;
@@ -50,6 +54,15 @@ class SplayTree{
     t->sum=fn(fn(calc(t->left),t->val),calc(t->right));
     t->cnt=count(t->left)+count(t->right)+1;
     return t;
+  }
+
+  void push(node_ptr t){
+    if(t->rev){
+      std::swap(t->left,t->right);
+      if(t->left)t->left->rev^=1;
+      if(t->right)t->right->rev^=1;
+      t->rev=false;
+    }
   }
 
   node_ptr rotr(node_ptr t){
@@ -71,11 +84,14 @@ class SplayTree{
   node_ptr splay(node_ptr t,int k){
     if(!t)return t;
 
+    push(t);
+
     assert(0<=k&&k<count(t));
     if(count(t->left)==k)return t;
 
     if(count(t->left)>k){
       assert(t->left);
+      push(t->left);
       if(count(t->left->left)==k)return rotr(t);
       if(count(t->left->left)>k){
         t->left->left=splay(t->left->left,k);update(t->left);
@@ -87,6 +103,7 @@ class SplayTree{
       }
     }else{
       assert(t->right);
+      push(t->right);
       if(count(t->right->left)==k-count(t->left)-1)return rotl(t);
       if(count(t->right->left)>k-count(t->left)-1){
         t->right->left=splay(t->right->left,k-count(t->left)-1);update(t->right);
@@ -163,6 +180,15 @@ class SplayTree{
 
   void erase(int k){
     erase(root,k);
+  }
+
+  //[a,b)を反転する 演算が可換のときに使える
+  void reverse(int a,int b){
+    auto temp=split(root,b);
+    auto temp2=split(temp.first,a);
+    temp2.second->rev^=1;
+
+    root=merge(merge(temp2.first,temp2.second),temp.second);
   }
 
   T query(){return calc(root);}

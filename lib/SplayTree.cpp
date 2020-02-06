@@ -23,6 +23,7 @@
 #include "limits.h"
 
 //WIP:reverseは実装した 多分同じ感じで他の遅延操作はいけそう
+// Nodeにreverse-sumを持たせれば非可換演算のrevもいける
 
 //SplayTree merge/split based
 template<typename T>

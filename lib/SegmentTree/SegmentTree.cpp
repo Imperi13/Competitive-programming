@@ -7,7 +7,7 @@
 #include <deque>
 #include <iomanip>
 #include <iostream>
-#include<functional>
+#include <functional>
 #include <map>
 #include <numeric>
 #include <queue>

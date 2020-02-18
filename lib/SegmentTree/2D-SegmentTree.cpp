@@ -23,94 +23,66 @@
 #include "limits.h"
 
 //verifyしてない O(log^2 N)
+//空間O(Q*(logN)^2) 
 
 //2Dセグ木 x,y,id,可換演算fを渡す
-template <class T>
-class SegmentTree {
- private:
+template<typename T,typename F>
+class SegmentTree2D{
+  private:
 
-  //動的セグ木 
   class DynamicSegmentTree{
     private:
 
-    using F=std::function<T(T,T)>;
-
     long long n,n0;
-    F fn;
-    T init;
+    F f;
+    T id;
 
-    class Node{
-      public:
+    struct Node{
       std::shared_ptr<Node> left,right;
-      std::weak_ptr<Node> par;
       T value;
 
-      Node(T i,const std::shared_ptr<Node>& par_):value(i),left(),right(){
-        par=par_;
-      }
-
-      Node(T i):value(i),left(),right(),par(){}
+      Node(T i):value(i),left(),right(){}
     };
 
     std::shared_ptr<Node> root;
 
     T query(long long a,long long b,const std::shared_ptr<Node>& now,long long l,long long r){
-      if(a<=l&&r<=b){
-        return now->value;
-      }
-      if(b<=l||r<=a){
-        return init;
-      }
+      if(a<=l&&r<=b)return now->value;
+      if(b<=l||r<=a)return id;
 
-      T lval=(now->left)?query(a,b,now->left,l,l+(r-l)/2):init;
-      T rval=(now->right)?query(a,b,now->right,l+(r-l)/2,r):init;
+      T lval=(now->left)?query(a,b,now->left,l,l+(r-l)/2):id;
+      T rval=(now->right)?query(a,b,now->right,l+(r-l)/2,r):id;
 
-      return fn(lval,rval);
+      return f(lval,rval);
     }
 
     public:
 
     //要素数の最大値n,単位元i,演算fを渡す
-    DynamicSegmentTree(long long n_,T i,F f):n(n_),init(i),fn(f),root(new Node(init)){
+    DynamicSegmentTree(long long n_,T i,F f):n(n_),id(i),f(f),root(new Node(id)){
       n0=1;
       while(n0<n_)n0<<=1;
     }
 
-    // 更新 Ai=fn(Ai,val) を行う,dest=trueのときは初期化
-    void update(long long i,T val,bool dest){
+    // 更新 Ai=fn(Ai,val) を行う
+    void update(long long i,T val){
       assert(0<=i&&i<n);
       std::shared_ptr<Node> now(root);
 
       long long l=0,r=n0;
       while(r-l>1){
+        now->value=f(now->value,val);
         long long mid=l+(r-l)/2;
 
         if(i<mid){
-          if(!now->left){
-            now->left=std::make_shared<Node>(init,now);
-          }
-
-          now=now->left;
-
-          r=mid;
+          if(!now->left)now->left=std::make_shared<Node>(id);
+          now=now->left;r=mid;
         }else{
-          if(!now->right){
-            now->right=std::make_shared<Node>(init,now);
-          }
-
-          now=now->right;
-
-          l=mid;
+          if(!now->right)now->right=std::make_shared<Node>(id);
+          now=now->right;l=mid;
         }
       }
-
-      if(dest)now->value=val;
-      else now->value=fn(now->value,val);
-
-      while(now->par.lock()){
-        now=now->par.lock();
-        now->value=fn((now->left)?now->left->value:init,(now->right)?now->right->value:init);
-      }
+      now->value=f(now->value,val);
     }
 
     //[a,b)の区間演算結果を返す
@@ -120,52 +92,60 @@ class SegmentTree {
     }
   };
 
-  using F=std::function<T(T,T)>;
+  long long x,x0,y;
+  F f;
+  T id;
 
-  long long n;
-  T init;
-  std::vector<DynamicSegmentTree> dat;
-  F fn;
+  struct Node_seq;
+  using node_ptr=std::shared_ptr<Node_seq>;
 
- public:
-  SegmentTree(long long x,long long y, T para, F fun)
-      : init(para), fn(fun) {
-    n = 1;
-    while (n < x) {
-      n *= 2;
-    }
-    for(ll i=0;i<2*n-1;i++)dat.emplace_back(DynamicSegmentTree(y,para,fun));
+  struct Node_seq{
+    node_ptr left,right;
+    DynamicSegmentTree seq;
+
+    Node_seq(long long y,T i,F f):seq(y,i,f),left(),right(){}
+  };
+
+  node_ptr root;
+
+  T query(long long a,long long b,long long d,long long u,node_ptr& now,long long l,long long r){
+    if(a<=l&&r<=b)return now->seq.query(d,u);
+    if(b<=l||r<=a)return id;
+
+    T lval=(now->left)?query(a,b,d,u,now->left,l,l+(r-l)/2):id;
+    T rval=(now->right)?query(a,b,d,u,now->right,l+(r-l)/2,r):id;
+
+    return f(lval,rval);
   }
 
-  // k番目(0-indexed)を値aで更新,dest=trueのときは更新前を破壊して初期化する
-  void update(long long k,long long y, T a) {
-    assert(0<=k&&k<n);
-    k += n - 1;
-    dat[k].update(y,a,false);
+  public:
 
-    while (k > 0) {
-      k = (k - 1) / 2;
-      dat[k].update(y,a,false);
-    }
+  SegmentTree2D(long long x,long long y,T i,F f):x(x),y(y),id(i),f(f),root(new Node_seq(y,id,f)){
+    x0=1;
+    while(x0<x)x0<<=1;
   }
 
-  //[a,b)の値を返す
-  T query(long long xa, long long xb,long long ya,long long yb){
-    assert(0<=xa&&xb<=n);
-    T rval=init,lval=init;
+  void update(long long a,long long b,T val){
+    assert(0<=a&&a<x&&0<=b&&b<y);
+    node_ptr now(root);
 
-    long long l=xa+n-1,r=xb+n-1;
-    for(;l<r;l=(l>>1),r=(r>>1)){
-      if(!(r&1)){
-        r--;
-        rval=fn(rval,dat[r].query(ya,yb));
-      }
-      if(!(l&1)){
-        lval=fn(lval,dat[l].query(ya,yb));
-        l++;
+    long long l=0,r=x0;
+    while(r-l>1){
+      now->seq.update(b,val);
+      long long mid=l+(r-l)/2;
+
+      if(a<mid){
+        if(!now->left)now->left=std::make_shared<Node_seq>(y,id,f);
+        now=now->left;r=mid;
+      }else{
+        if(!now->right)now->right=std::make_shared<Node_seq>(y,id,f);
+        now=now->right;l=mid;
       }
     }
+    now->seq.update(b,val);
+  }
 
-    return fn(lval,rval);
+  T query(long long l,long long r,long long d,long long u){
+    return query(l,r,d,u,root,0,x0);
   }
 };

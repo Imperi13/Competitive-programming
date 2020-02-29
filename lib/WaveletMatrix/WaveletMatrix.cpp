@@ -275,17 +275,4 @@ class WaveletMatrix{
     assert(a<=b);
     return less(first,last,b)-less(first,last,a);
   }
-
-  void test(){
-    for(int i=BITLEN-1;i>=0;i--){
-      debug(i);
-      bitvec[i].test_out();
-      debug(zerocnt[i]);
-    }
-
-    for(auto e:index){
-      debug(e.first,e.second);
-    }
-  }
-
 };

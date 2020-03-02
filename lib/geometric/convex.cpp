@@ -26,7 +26,7 @@
 
 using Point=std::complex<long double>;
 
-const long double EPS=1e-10;
+constexpr long double EPS=1e-10;
 const long double PI=std::acos(-1.0l);
 
 bool EQ(long double a,long double b){return std::abs(a-b)<EPS;}
@@ -53,6 +53,20 @@ bool on_line(Point a,Point b,Point c){
 bool on_segment(Point a,Point b,Point c){
   return std::abs(c-a)+std::abs(b-c)<std::abs(b-a)+EPS;
 }
+
+std::vector<Point> crosspointCC(Point a,long double ra,Point b,long double rb){
+  std::vector<Point> ret;
+  Point ab=b-a;
+  long double d=std::abs(ab);
+  long double crL= (std::norm(ab)+ra*ra-rb*rb) / (2*d);
+  if(EQ(d,0)|| ra<std::abs(crL))return ret;
+  Point abN=ab*Point(0,std::sqrt(ra*ra-crL*crL)/d);
+  Point cp = a+crL/d*ab;
+  ret.emplace_back(cp+abN);
+  if(!EQ(std::abs(abN),0))ret.emplace_back(cp-abN);
+  return ret;
+}
+
 
 //どの2点も異なる点集合の凸包を求める
 std::vector<std::pair<Point,long long>> convex(std::vector<std::pair<Point,long long>> set){

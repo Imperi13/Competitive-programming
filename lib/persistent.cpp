@@ -30,13 +30,15 @@ class PersistentStack{
     Node(T value_,const std::shared_ptr<Node>& next_):value(value_),next(next_){}
   };
 
-  std::shared_ptr<Node> root;
+  using node_ptr=std::shared_ptr<Node>;
+
+  node_ptr root;
 
   public:
 
   PersistentStack():root(){}
 
-  PersistentStack(const std::shared_ptr<Node>& root_):root(root_){}
+  PersistentStack(const node_ptr& root_):root(root_){}
 
   bool empty(){
     return !root;

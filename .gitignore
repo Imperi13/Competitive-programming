@@ -10,6 +10,7 @@
 /Syouzin/
 /syouzin/
 /.vscode/
+peda*
 copy.sh
 a.cpp
 cs.code-workspace

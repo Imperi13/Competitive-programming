@@ -30,6 +30,43 @@ long long extgcd(long long a,long long b,long long& x,long long& y){
   return b;
 }
 
+//拡張gcdを使ったmod_inv a,modがcoprimeの必要あり
+long long mod_inv(long long a,long long mod){
+  long long x,y;
+  long long b=mod;
+  for(ll u=y=1,v=x=0;a;){
+    ll q=b/a;
+    std::swap(x-=q*u,u);
+    std::swap(y-=q*v,v);
+    std::swap(b-=q*a,a);
+  }
+
+  if(b!=1)return -1;
+  x%=mod;
+  if(x<0)x+=mod;
+  return x;
+}
+
+long long garner(std::vector<long long> b,std::vector<long long> m,long long mod){
+  m.emplace_back(mod);
+  std::vector<long long> coeffs(m.size(),1);
+  std::vector<long long> constants(m.size(),0);
+  for(std::size_t i=0;i<b.size();i++){
+    long long temp=(b[i]-constants[i])*mod_inv(coeffs[i],m[i])%m[i];
+    if(temp<0)temp+=m[i];
+    for(std::size_t j=i+1;j<m.size();j++){
+      constants[j]+=temp*coeffs[j];
+      constants[j]%=m[j];
+      if(constants[j]<0)constants[j]+=m[j];
+      coeffs[j]*=m[i];
+      coeffs[j]%=m[j];
+      if(coeffs[j]<0)coeffs[j]+=m[j];
+    }
+  }
+
+  return constants.back();
+}
+
 //非再帰累乗(mod付き)
 ll pow_mod(ll a, ll b, ll mod=-1) {
   if ((a == 0)||(mod!=-1&&a%mod==0)) {
@@ -71,14 +108,17 @@ T pow2(T a, long long b) {
 // max_dには多項式2つの次数の積より大きい2^nを渡す
 template <long long modu, long long root>
 class NumberTheoreticTransform {
-  /*
-   modとrootと次数の最大値の組
-   1224736769 , 3 , 2^24
-   998244353 , 3 , 2^23
-  */
- using ll=long long;
 
- private:
+  // (924844033, 5)
+  // (998244353, 3)
+  // (1012924417, 5)
+  // (167772161, 3)
+  // (469762049, 3)
+  // (1224736769, 3)
+
+  using ll=long long;
+
+  private:
 
   ll pow_mod(ll a, ll b, ll mod) {
     if (a % mod == 0) {
@@ -101,6 +141,8 @@ class NumberTheoreticTransform {
   ll size = 1;
 
   public:
+
+  ll get_mod(){return modu;}
 
   std::vector<ll> fft(std::vector<ll>& a, bool inv = false) {
     ll mask = size - 1;
@@ -139,8 +181,8 @@ class NumberTheoreticTransform {
     zeta[0] = 1;
     for (ll i = 1; i < size; i++) zeta[i] = (zeta[i - 1] * ze) % modu;
     std::vector<ll> A(size), B(size);
-    for (ll i = 0; i < a.size(); i++) A[i] = a[i];
-    for (ll i = 0; i < b.size(); i++) B[i] = b[i];
+    for (std::size_t i = 0; i < a.size(); i++) A[i] = a[i];
+    for (std::size_t i = 0; i < b.size(); i++) B[i] = b[i];
 
     A = fft(A);
     B = fft(B);
@@ -151,70 +193,85 @@ class NumberTheoreticTransform {
   }
 };
 
-namespace mat{
+template<typename Num,std::size_t ROW,std::size_t COLUMN>
+class Mat{
+  private:
 
-  template<class T>
-  class Matrix{
-    public:
+  public:
 
-    std::vector<std::vector<T>> value;
+  std::vector<std::vector<Num>> a;
 
-    Matrix(long long r,long long c):_row(r),_column(c){
-      value.resize(_row);
-      for(long long i=0;i<_row;i++){
-        value[i].resize(_column);
-        for(long long j=0;j<_column;j++){
-          value[i][j]=0;
+  Mat(const Num init=0):a(ROW,std::vector<Num>(COLUMN,init)){}
+
+  constexpr Num& at(std::size_t i,std::size_t j){return a[i][j];}
+  constexpr std::size_t get_row(){return ROW;}
+  constexpr std::size_t get_column(){return COLUMN;}
+
+  constexpr Mat operator+(const Mat rhs){
+    return Mat(*this)+=rhs;
+  }
+
+  constexpr Mat operator-(const Mat rhs){
+    return Mat(*this)-=rhs;
+  }
+
+  template<std::size_t NEWCOLUMN>
+  constexpr Mat<Num,ROW,NEWCOLUMN> operator*(const Mat<Num,COLUMN,NEWCOLUMN> rhs){
+    Mat<Num,ROW,NEWCOLUMN> tmp;
+    for(std::size_t r=0;r<ROW;r++){
+      for(std::size_t c=0;c<NEWCOLUMN;c++){
+        for(std::size_t i=0;i<COLUMN;i++){
+          tmp.a[r][c]+=a[r][i]*rhs.a[i][c];
         }
       }
     }
+    return tmp;
+  }
 
-    Matrix():_row(1),_column(1){
-      value.resize(1);
-      value[0].resize(1);
-      value[0][0]=0;
+  constexpr Mat& operator+=(const Mat<Num,ROW,COLUMN> rhs){
+    for(std::size_t i=0;i<ROW;i++){
+      for(std::size_t j=0;j<COLUMN;j++){
+        a[i][j]+=rhs.a[i][j];
+      }
     }
+    return *this;
+  }
 
-    Matrix(const Matrix<T>& A){
-      _row=A.row();_column=A.column();
-      value.resize(_row);
-      for(long long i=0;i<_row;i++){
-        value[i].resize(_column);
-        for(long long j=0;j<_column;j++){
-          value[i][j]=A.value[i][j];
+  constexpr Mat& operator-=(const Mat<Num,ROW,COLUMN> rhs){
+    for(std::size_t i=0;i<ROW;i++){
+      for(std::size_t j=0;j<COLUMN;j++){
+        a[i][j]-=rhs.a[i][j];
+      }
+    }
+    return *this;
+  }
+
+  constexpr Mat& operator*=(const Mat<Num,COLUMN,COLUMN> rhs){
+    std::vector<std::vector<Num>> tmp(ROW,std::vector<Num>(COLUMN,0));
+    for(std::size_t r=0;r<ROW;r++){
+      for(std::size_t c=0;c<COLUMN;c++){
+        for(std::size_t i=0;i<COLUMN;i++){
+          tmp[r][c]+=a[r][i]*rhs.a[i][c];
         }
       }
     }
+    a=std::move(tmp);
+    return *this;
+  }
 
-    Matrix(const std::vector<std::vector<T>>& A){
-      _row=A.size();_column=A[0].size();
-      value.resize(_row);
-      for(long long i=0;i<_row;i++){
-        value[i].resize(_column);
-        for(long long j=0;j<_column;j++){
-          value[i][j]=A[i][j];
-        }
+  constexpr static Mat id(){
+    static_assert(ROW==COLUMN,"ROW must be equal to COLUMN");
+    Mat<Num,ROW,COLUMN> temp;
+    for(std::size_t i=0;i<ROW;i++)temp.at(i,i)=1;
+    return temp;
+  }
+
+  void show(){
+    for(std::size_t i=0;i<ROW;i++){
+      for(std::size_t j=0;j<COLUMN;j++){
+        std::cout<<a[i][j]<<" ";
       }
+      std::cout<<"\n";
     }
-
-    void show(){
-      for(long long i=0;i<_row;i++){
-        for(long long j=0;j<_column;j++){
-          std::cout<<value[i][j]<<" ";
-        }
-        std::cout<<"\n";
-      }
-    }
-
-    void change(long long r,long long c,T val){ value[r][c]=val;}
-
-    long long row()const{return this->_row;}
-    long long column()const{return this->_column;}
-
-    private: 
-
-    long long _row,_column;
-
-  };
-
-}
+  }
+};

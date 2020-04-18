@@ -201,7 +201,7 @@ class Mat{
 
   std::vector<std::vector<Num>> a;
 
-  Mat(const Num init=0):a(ROW,std::vector<Num>(COLUMN,init)){}
+  explicit Mat(const Num init=0):a(ROW,std::vector<Num>(COLUMN,init)){}
 
   constexpr Num& at(std::size_t i,std::size_t j){return a[i][j];}
   constexpr std::size_t get_row(){return ROW;}

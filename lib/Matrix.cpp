@@ -40,8 +40,6 @@ template<typename Field,std::size_t ROW,std::size_t COLUMN>
 class Mat{
   private:
 
-  constexpr static Field EPS=1e-10;
-
   public:
 
   std::vector<std::vector<Field>> a;
@@ -49,9 +47,18 @@ class Mat{
   explicit Mat(const Field init=0):a(ROW,std::vector<Field>(COLUMN,init)){}
   Mat(const std::vector<std::vector<Field>>& a_):a(a_){}
 
-  constexpr Field& at(std::size_t i,std::size_t j){return a[i][j];}
+  constexpr Field& operator()(std::size_t i,std::size_t j){return a[i][j];}
   constexpr static std::size_t get_row(){return ROW;}
   constexpr static std::size_t get_column(){return COLUMN;}
+  constexpr bool operator==(const Mat rhs){
+    for(std::size_t i=0;i<ROW;i++){
+      for(std::size_t j=0;j<COLUMN;j++){
+        if(a[i][j]!=rhs.a[i][j])return false;
+      }
+    }
+    return true;
+  }
+  constexpr bool operator!=(const Mat rhs){return !(*this==rhs);}
 
   constexpr Mat operator+(const Mat rhs){
     return Mat(*this)+=rhs;
@@ -220,6 +227,15 @@ class Mat{
   constexpr Field& operator()(std::size_t i,std::size_t j){return a[i][j];}
   constexpr static std::size_t get_row(){return ROW;}
   constexpr static std::size_t get_column(){return COLUMN;}
+  constexpr bool operator==(const Mat rhs){
+    for(std::size_t i=0;i<ROW;i++){
+      for(std::size_t j=0;j<COLUMN;j++){
+        if(a[i][j]!=rhs.a[i][j])return false;
+      }
+    }
+    return true;
+  }
+  constexpr bool operator!=(const Mat rhs){return !(*this==rhs);}
 
   constexpr Mat operator+(const Mat rhs){
     return Mat(*this)+=rhs;

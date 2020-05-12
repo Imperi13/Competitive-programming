@@ -34,16 +34,21 @@
 
   WIP: decrement
 */
+template<typename T>
 class Fibonacci_Heap{
   private:
 
+  using F=std::function<bool(T,T)>;
+
+  public:
+
   struct Node{
-    long long val;
+    T val;
     std::size_t deg;
     bool mark;
     Node *par,*ch;
     Node *left,*right;
-    Node(long long val_=0):val(val_),deg(0),mark(false),par(nullptr),ch(nullptr),left(this),right(this){}
+    Node(T val_=T()):val(val_),deg(0),mark(false),par(nullptr),ch(nullptr),left(this),right(this){}
     ~Node(){
       par=nullptr;
       if(ch){delete ch;ch=nullptr;}
@@ -82,12 +87,15 @@ class Fibonacci_Heap{
     }
   };
 
+  private:
+
   Node *min_ptr;
   std::size_t n;
+  F comp;
 
   public:
 
-  Fibonacci_Heap():min_ptr(nullptr),n(0){}
+  Fibonacci_Heap(F comp_):min_ptr(nullptr),n(0),comp(comp_){}
   Fibonacci_Heap(const Fibonacci_Heap&)=delete;
   Fibonacci_Heap& operator=(const Fibonacci_Heap&)=delete;
   ~Fibonacci_Heap(){
@@ -99,9 +107,9 @@ class Fibonacci_Heap{
   std::size_t size(){return n;}
 
   
-  long long top(){assert(min_ptr);return min_ptr->val;}
+  T top(){assert(min_ptr);return min_ptr->val;}
 
-  Node *insert(long long val){
+  Node *insert(T&& val){
     n++;
     Node *tmp=new Node(val);
     if(!min_ptr){
@@ -111,7 +119,7 @@ class Fibonacci_Heap{
     Node *right=min_ptr->right;
     min_ptr->right=tmp;tmp->left=min_ptr;
     right->left=tmp;tmp->right=right;
-    if(min_ptr->val>val)min_ptr=tmp;
+    if(comp(tmp->val,min_ptr->val))min_ptr=tmp;
     return tmp;
   }
 
@@ -164,7 +172,7 @@ class Fibonacci_Heap{
       temp->left=temp;temp->right=temp;
       while(deg_list[temp->deg]){
         std::size_t deg=temp->deg;
-        if(deg_list[deg]->val < temp->val){
+        if(comp(deg_list[deg]->val , temp->val)){
           deg_list[deg]->insert_ch(temp);
           temp=deg_list[deg];
         }else{
@@ -192,21 +200,21 @@ class Fibonacci_Heap{
     min_ptr=temp;
     now=temp->right;
     while(now!=temp){
-      if(now->val < min_ptr->val)min_ptr=now;
+      if(comp(now->val , min_ptr->val))min_ptr=now;
       now=now->right;
     }
 
   }
 
-  void decrement(Node *v,long long new_val){
-    assert(v->val > new_val);
+  void decrement(Node *v,T new_val){
+    assert(comp(new_val,v->val));
     v->val = new_val;
     if(!v->par){
-      if(min_ptr->val > v->val)min_ptr=v;
+      if(comp(v->val,min_ptr->val))min_ptr=v;
       return;
     }
 
-    if(!(v->par->val > v->val))return;
+    if(!comp(v->val,v->par->val))return;
 
     Node *now=v;
     while(now->par->mark){
@@ -225,7 +233,7 @@ class Fibonacci_Heap{
     next->left=now;now->right=next;
     if(!p->par)p->mark=false;
 
-    if(new_val < min_ptr->val)min_ptr=v;
+    if(comp(new_val , min_ptr->val))min_ptr=v;
   }
 
 };
